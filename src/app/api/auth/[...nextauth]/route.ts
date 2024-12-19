@@ -3,8 +3,9 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { AuthOptions } from 'next-auth';
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -39,12 +40,6 @@ const handler = NextAuth({
       }
     })
   ],
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: '/login',
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -59,6 +54,13 @@ const handler = NextAuth({
       return session;
     },
   },
-});
+  pages: {
+    signIn: '/login',
+  },
+  session: {
+    strategy: "jwt",
+  },
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
