@@ -1,65 +1,109 @@
 'use client';
 
-import Link from 'next/link';
+import { Layout, Row, Col, Typography, Space } from 'antd';
+import { GithubOutlined, TwitterOutlined, LinkedinOutlined, LockOutlined } from '@ant-design/icons';
+import { motion } from 'framer-motion';
+
+const { Footer: AntFooter } = Layout;
+const { Title, Text, Link } = Typography;
+
+const MotionFooter = motion(AntFooter);
+
+const socialLinks = [
+  { icon: <GithubOutlined />, href: 'https://github.com' },
+  { icon: <TwitterOutlined />, href: 'https://twitter.com' },
+  { icon: <LinkedinOutlined />, href: 'https://linkedin.com' },
+];
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Company Info */}
-          <div>
-            <h3 className="text-xl font-bold text-white mb-4">Auth Demo</h3>
-            <p className="text-gray-400">
-              Secure, fast, and reliable authentication system built with Next.js 14
-              and MongoDB.
-            </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/" className="hover:text-white transition-colors">
+    <MotionFooter 
+      className="bg-gray-900 text-white"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="max-w-7xl mx-auto">
+        <Row gutter={[48, 32]} justify="space-between">
+          <Col xs={24} sm={8}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <Space align="center" className="mb-6">
+                <LockOutlined className="text-2xl text-blue-400" />
+                <Title level={4} className="!text-white !m-0">
+                  Auth Demo
+                </Title>
+              </Space>
+              <Text className="text-gray-400 block">
+                A modern authentication system built with Next.js 14 and MongoDB.
+                Secure, fast, and reliable.
+              </Text>
+            </motion.div>
+          </Col>
+          
+          <Col xs={24} sm={8}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              <Title level={4} className="!text-white mb-6">
+                Quick Links
+              </Title>
+              <Space direction="vertical" size="middle">
+                <Link href="/" className="text-gray-400 hover:text-blue-400">
                   Home
                 </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="hover:text-white transition-colors">
+                <Link href="/login" className="text-gray-400 hover:text-blue-400">
+                  Sign In
+                </Link>
+                <Link href="/dashboard" className="text-gray-400 hover:text-blue-400">
                   Dashboard
                 </Link>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Terms of Service
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Contact Us</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>Email: contact@authdemo.com</li>
-              <li>Phone: (555) 123-4567</li>
-              <li>Address: 123 Auth Street, Demo City</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-8 pt-8 border-t border-gray-800">
-          <p className="text-center text-gray-400">
-            © {new Date().getFullYear()} Auth Demo. All rights reserved.
-          </p>
-        </div>
+              </Space>
+            </motion.div>
+          </Col>
+          
+          <Col xs={24} sm={8}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <Title level={4} className="!text-white mb-6">
+                Connect With Us
+              </Title>
+              <Space size="large" className="text-2xl">
+                {socialLinks.map((link, index) => (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    target="_blank"
+                    className="text-gray-400 hover:text-blue-400 transition-colors"
+                  >
+                    {link.icon}
+                  </Link>
+                ))}
+              </Space>
+            </motion.div>
+          </Col>
+        </Row>
+        
+        <Row justify="center" className="mt-12 pt-8 border-t border-gray-800">
+          <Col>
+            <Text className="text-gray-500">
+              {new Date().getFullYear()} Auth Demo. All rights reserved.
+            </Text>
+          </Col>
+        </Row>
       </div>
-    </footer>
+    </MotionFooter>
   );
 }

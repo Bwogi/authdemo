@@ -2,83 +2,82 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { Layout, Menu, Button, Avatar, Space, Dropdown } from 'antd';
+import { UserOutlined, LogoutOutlined, DashboardOutlined, LockOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { motion } from 'framer-motion';
+
+const { Header } = Layout;
+
+const MotionHeader = motion(Header);
 
 export default function Navbar() {
   const { data: session } = useSession();
-  const [isOpen, setIsOpen] = useState(false);
+
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'dashboard',
+      label: <Link href="/dashboard">Dashboard</Link>,
+      icon: <DashboardOutlined />,
+    },
+    {
+      key: 'signout',
+      label: 'Sign Out',
+      icon: <LogoutOutlined />,
+      onClick: () => signOut(),
+      danger: true,
+    },
+  ];
 
   return (
-    <nav className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link 
-              href="/" 
-              className="flex items-center space-x-2"
-            >
-              <svg 
-                className="h-8 w-8" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
+    <MotionHeader 
+      className="bg-white px-4 border-b border-gray-200 fixed w-full z-50"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="max-w-7xl mx-auto flex justify-between items-center h-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Link href="/" className="flex items-center space-x-2">
+            <LockOutlined className="text-2xl text-blue-600" />
+            <span className="text-xl font-bold text-gray-800">Auth Demo</span>
+          </Link>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          {session ? (
+            <Space size="middle">
+              <span className="text-gray-600">
+                {session.user?.name}
+              </span>
+              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+                <Avatar 
+                  icon={<UserOutlined />} 
+                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 transition-colors"
                 />
-              </svg>
-              <span className="text-xl font-bold">Auth Demo</span>
+              </Dropdown>
+            </Space>
+          ) : (
+            <Link href="/login">
+              <Button 
+                type="primary"
+                icon={<UserOutlined />}
+                className="bg-blue-500 hover:bg-blue-600 border-none"
+              >
+                Sign In
+              </Button>
             </Link>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            {session ? (
-              <div className="flex items-center space-x-4">
-                <div className="hidden md:flex items-center space-x-2">
-                  <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                    <span className="text-sm font-medium">
-                      {session.user?.name?.[0]?.toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium">
-                    {session.user?.name}
-                  </span>
-                </div>
-                <Link
-                  href="/dashboard"
-                  className="hidden md:inline-block px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={() => signOut()}
-                  className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 transition-colors text-sm font-medium"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/login"
-                  className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 rounded-md bg-white text-indigo-600 hover:bg-gray-100 transition-colors text-sm font-medium"
-                >
-                  Register
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+          )}
+        </motion.div>
       </div>
-    </nav>
+    </MotionHeader>
   );
 }
