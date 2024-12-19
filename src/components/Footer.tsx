@@ -35,7 +35,7 @@ export default function Footer() {
             >
               <Space align="center" className="mb-6">
                 <LockOutlined className="text-2xl text-blue-400" />
-                <Title level={4} className="!text-white !m-0">
+                <Title level={4} className="!text-blue-400 !m-0">
                   Auth Demo
                 </Title>
               </Space>
@@ -53,7 +53,7 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              <Title level={4} className="!text-white mb-6">
+              <Title level={4} className="!text-blue-400 mb-6">
                 Quick Links
               </Title>
               <Space direction="vertical" size="middle">
@@ -77,7 +77,7 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
             >
-              <Title level={4} className="!text-white mb-6">
+              <Title level={4} className="!text-blue-400 mb-6">
                 Connect With Us
               </Title>
               <Space size="large" className="text-2xl">
