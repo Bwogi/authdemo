@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import connectDB from '@/lib/mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
 import { z } from 'zod';
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // Validate the request body
     const validatedData = RegisterSchema.parse(body);
     
-    await connectDB();
+    await connectToDatabase();
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: validatedData.email });

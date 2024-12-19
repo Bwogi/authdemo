@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import connectDB from '@/lib/mongodb';
+import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
 import { AuthOptions } from 'next-auth';
 
@@ -18,7 +18,7 @@ const authOptions: AuthOptions = {
           throw new Error('Please enter an email and password');
         }
 
-        await connectDB();
+        await connectToDatabase();
 
         const user = await User.findOne({ email: credentials.email });
 

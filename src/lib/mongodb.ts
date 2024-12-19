@@ -24,27 +24,27 @@ if (!cached) {
   };
 }
 
-async function connectDB(): Promise<typeof mongoose> {
-  if (cached?.conn) {
-    return cached.conn;
+export async function connectToDatabase() {
+  if (cached.conn) {
+    return { db: cached.conn.connection.db };
   }
 
-  if (!cached?.promise) {
+  if (!cached.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached!.promise = mongoose.connect(MONGODB_URI, opts);
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      return mongoose;
+    });
   }
 
   try {
-    const conn = await cached!.promise;
-    cached!.conn = conn;
-    return conn;
+    cached.conn = await cached.promise;
   } catch (e) {
-    cached!.promise = null;
+    cached.promise = null;
     throw e;
   }
-}
 
-export default connectDB;
+  return { db: cached.conn.connection.db };
+}
