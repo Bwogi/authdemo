@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Table, Button, message, Space, Tag, Switch, Popconfirm } from 'antd';
+import { Table, Button, message, Space, Tag, Switch, Popconfirm, Alert } from 'antd';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -17,17 +17,26 @@ interface User {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const { data: session } = useSession();
+  const [error, setError] = useState<string | null>(null);
+  const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (session?.user) {
-      fetchUsers();
+    if (sessionStatus === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/admin/login');
+      return;
     }
-  }, [session]);
+    
+    fetchUsers();
+  }, [session, sessionStatus, router]);
 
   const fetchUsers = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const res = await fetch('/api/admin/users', {
         headers: {
           'Content-Type': 'application/json',
@@ -40,10 +49,15 @@ export default function AdminUsersPage() {
       }
 
       const data = await res.json();
-      setUsers(data.users || []);
+      if (!Array.isArray(data.users)) {
+        throw new Error('Invalid response format');
+      }
+
+      setUsers(data.users);
     } catch (error: any) {
       console.error('Error fetching users:', error);
-      message.error(error.message);
+      setError(error.message || 'Failed to load users');
+      message.error(error.message || 'Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -63,10 +77,10 @@ export default function AdminUsersPage() {
       }
 
       message.success(`User ${status} successfully`);
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (error: any) {
       console.error('Error updating user:', error);
-      message.error(error.message);
+      message.error(error.message || 'Failed to update user');
     }
   };
 
@@ -84,10 +98,10 @@ export default function AdminUsersPage() {
       }
 
       message.success(`Admin rights ${makeAdmin ? 'granted' : 'revoked'} successfully`);
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (error: any) {
       console.error('Error updating admin status:', error);
-      message.error(error.message);
+      message.error(error.message || 'Failed to update admin status');
     }
   };
 
@@ -184,28 +198,43 @@ export default function AdminUsersPage() {
     },
   ];
 
-  if (!session?.user || !(session.user as any).isAdmin) {
-    return null;
+  // Show loading state while checking session
+  if (sessionStatus === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-2xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="p-6">
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          action={
+            <Button onClick={fetchUsers}>
+              Retry
+            </Button>
+          }
+        />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">User Management</h1>
-            <Button onClick={fetchUsers} type="default">
-              Refresh List
-            </Button>
-          </div>
-          <Table
-            columns={columns}
-            dataSource={users}
-            rowKey="_id"
-            loading={loading}
-          />
-        </div>
-      </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">User Management</h1>
+      <Table
+        columns={columns}
+        dataSource={users}
+        loading={loading}
+        rowKey="_id"
+      />
     </div>
   );
 }

@@ -12,23 +12,48 @@ export async function GET() {
     // Check if user is authenticated and is admin
     if (!session?.user || !(session.user as any).isAdmin) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { message: 'Unauthorized - Admin access required' },
         { status: 401 }
       );
     }
 
-    await connectToDatabase();
+    try {
+      await connectToDatabase();
+    } catch (error) {
+      console.error('MongoDB connection error:', error);
+      return NextResponse.json(
+        { message: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
     
-    // Get all users except the current admin
-    const users = await User.find({ 
-      email: { $ne: session.user.email } 
-    }).sort({ createdAt: -1 });
+    try {
+      // Get all users except the current admin
+      const users = await User.find({ 
+        email: { $ne: session.user.email } 
+      }).sort({ createdAt: -1 });
 
-    return NextResponse.json({ users });
+      // Ensure users is an array
+      if (!Array.isArray(users)) {
+        console.error('Users query returned non-array:', users);
+        return NextResponse.json(
+          { message: 'Invalid data format from database' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ users });
+    } catch (error) {
+      console.error('MongoDB query error:', error);
+      return NextResponse.json(
+        { message: 'Failed to fetch users from database' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('General error in users API:', error);
     return NextResponse.json(
-      { message: 'Error fetching users' },
+      { message: 'Internal server error' },
       { status: 500 }
     );
   }
