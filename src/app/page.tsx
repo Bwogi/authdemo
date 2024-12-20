@@ -107,14 +107,23 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.6 }}
                 >
                   {!session ? (
-                    <Button 
-                      type="primary" 
-                      size="large"
-                      icon={<ArrowRightOutlined />}
-                      className="bg-white hover:bg-gray-100 text-blue-600 border-none h-14 px-8 text-lg hover:scale-105 transition-all duration-300"
-                    >
-                      <Link href="/login">Get Started</Link>
-                    </Button>
+                    <Space size="middle">
+                      <Button 
+                        type="primary" 
+                        size="large"
+                        icon={<ArrowRightOutlined />}
+                        className="bg-white hover:bg-gray-100 text-blue-600 border-none h-14 px-8 text-lg hover:scale-105 transition-all duration-300"
+                      >
+                        <Link href="/login">Sign In</Link>
+                      </Button>
+                      <Button 
+                        type="default" 
+                        size="large"
+                        className="bg-blue-500 hover:bg-blue-600 text-white border-none h-14 px-8 text-lg hover:scale-105 transition-all duration-300"
+                      >
+                        <Link href="/register">Register</Link>
+                      </Button>
+                    </Space>
                   ) : (
                     <Space direction="vertical" align="center" size="large">
                       <Title level={3} className="!text-white !m-0">

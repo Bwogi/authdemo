@@ -3,21 +3,35 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Protect registration route
-  if (request.nextUrl.pathname === '/register') {
-    if (process.env.ENABLE_REGISTRATION !== 'true') {
-      return NextResponse.redirect(new URL('/login', request.url));
+  // Admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    // Don't protect login and register routes
+    if (request.nextUrl.pathname.match(/^\/admin\/(login|register)$/)) {
+      return NextResponse.next();
     }
+
+    // Protect other admin routes
+    return withAuth(request as any, {
+      callbacks: {
+        authorized: ({ token }) => !!(token && (token as any).isAdmin),
+      },
+      pages: {
+        signIn: '/admin/login',
+      },
+    } as any);
   }
 
-  // Continue with auth middleware for protected routes
+  // Regular user routes
   return withAuth(request as any, {
     callbacks: {
       authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: '/login',
     },
   } as any);
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/register']
+  matcher: ['/dashboard/:path*', '/admin/:path*']
 };

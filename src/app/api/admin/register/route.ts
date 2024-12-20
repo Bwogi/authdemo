@@ -4,7 +4,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
 import { z } from 'zod';
 
-// Define the schema for user registration
+// Define the schema for admin registration
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -12,36 +12,19 @@ const registerSchema = z.object({
   adminKey: z.string(),
 });
 
-if (!process.env.ADMIN_EMAIL) {
-  throw new Error('ADMIN_EMAIL environment variable is not set');
-}
-
 if (!process.env.ADMIN_KEY) {
   throw new Error('ADMIN_KEY environment variable is not set');
 }
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-const ADMIN_KEY = process.env.ADMIN_KEY;
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
-    // Validate the request body
     const validatedData = registerSchema.parse(body);
 
-    // Check admin key
-    if (validatedData.adminKey !== ADMIN_KEY) {
+    // Verify admin key
+    if (validatedData.adminKey !== process.env.ADMIN_KEY) {
       return NextResponse.json(
-        { message: 'Unauthorized: Invalid admin key' },
-        { status: 401 }
-      );
-    }
-
-    // Check if the email is the admin email
-    if (validatedData.email !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { message: 'Unauthorized: Only admin can register' },
+        { message: 'Invalid admin key' },
         { status: 401 }
       );
     }
@@ -50,44 +33,40 @@ export async function POST(req: Request) {
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: validatedData.email });
-
     if (existingUser) {
       return NextResponse.json(
-        { message: 'User with this email already exists' },
+        { message: 'User already exists' },
         { status: 400 }
       );
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
-    // Create new user
-    const user = await User.create({
+    // Create admin user
+    const newUser = await User.create({
       name: validatedData.name,
       email: validatedData.email,
       password: hashedPassword,
-      isAdmin: true, // Set admin flag
+      isAdmin: true, // Set as admin
+      status: 'approved', // Auto-approve admin users
     });
 
-    // Return success response without password
-    const { password, ...userWithoutPassword } = user.toObject();
-    
     return NextResponse.json(
-      { message: 'User created successfully', user: userWithoutPassword },
+      { message: 'Admin registered successfully' },
       { status: 201 }
     );
-
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Validation failed', errors: error.errors },
+        { message: error.errors[0].message },
         { status: 400 }
       );
     }
 
-    console.error('Registration error:', error);
+    console.error('Admin registration error:', error);
     return NextResponse.json(
-      { message: 'An error occurred while registering the user' },
+      { message: 'Internal server error' },
       { status: 500 }
     );
   }

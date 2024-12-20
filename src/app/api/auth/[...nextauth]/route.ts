@@ -4,6 +4,24 @@ import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
 import { AuthOptions } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
+import { Session, DefaultSession } from 'next-auth';
+import type { UserStatus } from '@/types/next-auth';
+
+interface ExtendedUser {
+  id: string;
+  isAdmin: boolean;
+  status: UserStatus;
+  email: string;
+}
+
+interface ExtendedSession extends Session {
+  user: {
+    id: string;
+    isAdmin: boolean;
+    status?: UserStatus;
+  } & DefaultSession['user'];
+}
 
 const authOptions: AuthOptions = {
   providers: [
@@ -26,9 +44,9 @@ const authOptions: AuthOptions = {
           throw new Error('No user found with this email');
         }
 
-        const isPasswordMatch = await bcrypt.compare(credentials.password, user.password);
+        const passwordMatch = await bcrypt.compare(credentials.password, user.password);
 
-        if (!isPasswordMatch) {
+        if (!passwordMatch) {
           throw new Error('Incorrect password');
         }
 
@@ -36,23 +54,35 @@ const authOptions: AuthOptions = {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          isAdmin: user.isAdmin,
+          status: user.status as UserStatus
         };
       }
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }): Promise<JWT & Partial<ExtendedUser>> {
       if (user) {
-        token.id = user.id;
+        return {
+          ...token,
+          id: user.id,
+          isAdmin: user.isAdmin,
+          status: user.status
+        };
       }
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-      }
-      return session;
-    },
+    async session({ session, token }): Promise<ExtendedSession> {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.id as string,
+          isAdmin: token.isAdmin as boolean,
+          status: token.status as UserStatus
+        }
+      };
+    }
   },
   pages: {
     signIn: '/login',
