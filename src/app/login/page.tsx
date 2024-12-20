@@ -61,7 +61,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                Your Password
               </label>
               <input
                 id="password"
